@@ -125,8 +125,8 @@ class ImageInfo(Resource):
 		# not sure if open-cv can be used like this in this in this framework?
 		image_file = cv2.imread(args["ImagePath"],cv2.IMREAD_GRAYSCALE) # made it black and white so you can see its a different image
 		
-		# save the image into the filesystem created above
-		cv2.imwrite("image_filesystem/new_file.png",image_file)
+		# save the image into the filesystem created above, pad name with zeros
+		cv2.imwrite("image_filesystem/"+"{0:04}".format(image_id)+" - new_image.png",image_file)
 		
 		# save info
 		db.session.add(image) # temporarily add
