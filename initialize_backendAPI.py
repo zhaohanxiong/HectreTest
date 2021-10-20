@@ -4,6 +4,7 @@ This script initializes the Flask API and the SQL alchemy database
 
 # import dependencies
 import os
+import cv2
 from datetime import datetime 
 from flask import Flask, request
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
@@ -26,7 +27,10 @@ class ImageDB(db.Model):
 
 	# define the image ID column which is primary key
 	ImageID = db.Column(db.Integer, primary_key=True)
-
+	
+	# define the path of the image to be uploaded
+	ImagePath = db.Column(db.String, nullable=False)
+	
 	# define date time column (UTC format)
 	Date = db.Column(db.DateTime(timezone=True), nullable=False)
 	
@@ -44,14 +48,21 @@ class ImageDB(db.Model):
 		return ("Images(image id = "+str(ImageID)+" date = "+str(Date)+" type = "+Type+" email = "+Email+" tenant id = "+TenantID)
 
 # create the database if it doesnt exist, if it exist, then dont overwrite
-if not any([s for s in os.listdir() if s == "image_database"]):
+if not any([s for s in os.listdir() if s == "image_database.db"]):
 	
 	# create database
 	db.create_all()
+	
+# create a folder to store images (more efficient to store images in filesystem than in SQL database)
+if not any([s for s in os.listdir() if s == "image_filesystem"]):
+	
+	# create folder
+	os.mkdir("image_filesystem")
 
 # define guidelines for put arguments with data type and error msg
 image_put_args = reqparse.RequestParser()
 image_put_args.add_argument("ImageID",type=int,help="Error! Insert ImageID",required=True)
+image_put_args.add_argument("ImagePath",type=str,help="Error! Insert image path")
 image_put_args.add_argument("Date",type=lambda x: datetime.strptime(x,'%Y-%m-%d %H:%M:%S'),help="Error! Insert Date",required=True)
 image_put_args.add_argument("Type",type=str,help="Error! Insert Fruit Type",required=True)
 image_put_args.add_argument("Email",type=str,help="Error! Insert User Email",required=True)
@@ -60,21 +71,23 @@ image_put_args.add_argument("TenantID",type=str,help="Error! Insert TenantID",re
 # define guidelines for updating database, not all fields are required, only primary key (ImageID)
 image_update_args = reqparse.RequestParser()
 image_update_args.add_argument("ImageID",type=int,help="Error! Insert ImageID",required=True)
+image_update_args.add_argument("ImagePath",type=str)
 image_update_args.add_argument("Date",type=lambda x: datetime.strptime(x,'%Y-%m-%d %H:%M:%S'))
 image_update_args.add_argument("Type",type=str)
 image_update_args.add_argument("Email",type=str)
 image_update_args.add_argument("TenantID",type=str)
 
 # define the data types of the class
-resource_fields = {"ImageID": fields.Integer,
-				   "Date": fields.DateTime(dt_format='iso8601'),
-				   "Type": fields.String,
-				   "Email": fields.String,
-				   "TenantID": fields.String
+resource_fields = {"ImageID": fields.Integer, # unique ID of image
+				   "ImagePath": fields.String, # path of image to be uploaded
+				   "Date": fields.DateTime(dt_format='iso8601'), # time and date of image acquired
+				   "Type": fields.String, # type of fruit in image
+				   "Email": fields.String, # email of user uploading image
+				   "TenantID": fields.String # ID of user uploading image
 				  }
 
 # create a class with inherits from resource, resource has few methods (get put delete etc)
-class Image(Resource):
+class ImageInfo(Resource):
 	
 	# decorator to serialize the object into the desired dictionary, otherwise only object will be returned
 	@marshal_with(resource_fields)
@@ -106,7 +119,14 @@ class Image(Resource):
 		if result:
 			abort(409, message="Error! image id already taken")
 		
-		image = ImageDB(ImageID=image_id, Date=args["Date"],Type=args["Type"],Email=args["Email"],TenantID=args["TenantID"])
+		image = ImageDB(ImageID=image_id,ImagePath=args["ImagePath"],Date=args["Date"],Type=args["Type"],Email=args["Email"],TenantID=args["TenantID"])
+		
+		# read the file into memory given path
+		# not sure if open-cv can be used like this in this in this framework?
+		image_file = cv2.imread(args["ImagePath"],cv2.IMREAD_GRAYSCALE) # made it black and white so you can see its a different image
+		
+		# save the image into the filesystem created above
+		cv2.imwrite("image_filesystem/new_file.png",image_file)
 		
 		# save info
 		db.session.add(image) # temporarily add
@@ -131,6 +151,8 @@ class Image(Resource):
 		
 		# make individual changes (not a very clean way to do it, can be improved in future)
 		# dont make changes to primary key
+		if args["ImagePath"]:
+			result.ImagePath = args["ImagePath"]
 		if args["Date"]:
 			result.Date = args["Date"]	
 		if args["Type"]:
@@ -168,8 +190,29 @@ class Image(Resource):
 		# return success message
 		return("successfully delete entry image id = "+str(image_id))
 
+'''
+# set up connections to upload images (this part doesnt work, I didnt have enough time for this)
+# 	this part reads image from some user interface (could be html site upload) and stores it into the
+# 	database as defined above. For this to work, I would need to define another data structure inside the
+# 	class, and also know more about the exact connection being made
+#	
+# 	but I believe this shouldnt be a good way as storing images in SQL databases is inefficient
+@app.route("/")
+def index():
+	return(render_template("upload_image_into_this_app"))
+	
+@app.route("/upload")
+def upload():
+	file = request.files["inputFile"]
+	
+	newFile = FileContents(name=file.filename, data=file.read())
+	db.session.add(newFile)
+	db.session.commit()
+	
+'''
+
 # Add class to API
-api.add_resource(Image, "/image/<int:image_id>")
+api.add_resource(ImageInfo, "/image/<int:image_id>")
 
 # start server and flask application
 if __name__ == "__main__":
