@@ -1,5 +1,12 @@
-import os
+# import dependencies
+from flask import Flask
+from flask_restful import Api, Resource
 
-print("test")
+# 
+app = Flask(__name__)
 
-x = [i for i in range(10) if i%%2 == 0]
+
+api = Api(app)
+
+if __name__ == "__main__":
+	app.run(debug=True)
