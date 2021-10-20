@@ -1,9 +1,10 @@
 '''
+This script initializes the Flask API and the SQL alchemy database
 '''
 
 # import dependencies
 import os
-import datetime
+from datetime import datetime 
 from flask import Flask, request
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 from flask_sqlalchemy import SQLAlchemy
@@ -51,22 +52,22 @@ if not any([s for s in os.listdir() if s == "image_database"]):
 # define guidelines for put arguments with data type and error msg
 image_put_args = reqparse.RequestParser()
 image_put_args.add_argument("ImageID",type=int,help="Error! Insert ImageID",required=True)
-image_put_args.add_argument("Date",type=datetime.datetime,help="Error! Insert Date",required=True)
+image_put_args.add_argument("Date",type=lambda x: datetime.strptime(x,'%Y-%m-%d %H:%M:%S'),help="Error! Insert Date",required=True)
 image_put_args.add_argument("Type",type=str,help="Error! Insert Fruit Type",required=True)
 image_put_args.add_argument("Email",type=str,help="Error! Insert User Email",required=True)
 image_put_args.add_argument("TenantID",type=str,help="Error! Insert TenantID",required=True)
 
 # define guidelines for updating database, not all fields are required, only primary key (ImageID)
 image_update_args = reqparse.RequestParser()
-image_update_args.add_argument("ImageID",type=int,help="Error! Insert Name of Video",required=True)
-image_update_args.add_argument("Date",type=datetime.datetime)
+image_update_args.add_argument("ImageID",type=int,help="Error! Insert ImageID",required=True)
+image_update_args.add_argument("Date",type=lambda x: datetime.strptime(x,'%Y-%m-%d %H:%M:%S'))
 image_update_args.add_argument("Type",type=str)
 image_update_args.add_argument("Email",type=str)
 image_update_args.add_argument("TenantID",type=str)
 
 # define the data types of the class
 resource_fields = {"ImageID": fields.Integer,
-				   "Date": fields.DateTime,
+				   "Date": fields.DateTime(dt_format='iso8601'),
 				   "Type": fields.String,
 				   "Email": fields.String,
 				   "TenantID": fields.String
@@ -78,35 +79,36 @@ class Image(Resource):
 	# decorator to serialize the object into the desired dictionary, otherwise only object will be returned
 	@marshal_with(resource_fields)
 	
-	# return something
-	def get(self, ImageID):
+	# return something from database given the image ID
+	def get(self, image_id):
 	
 		# query images by ID, get first sample
-		result = ImageDB.query.filter_by(id=ImageID).first()
+		result = ImageDB.query.filter_by(ImageID=image_id).first()
 		
 		# if no result found
 		if not result:
 			abort(404, message="Error! could not find image with id")
-			
+		
+		# return output data row
 		return(result)
 	
 	# decorator to serialize the object into the desired dictionary, otherwise only object will be returned
 	@marshal_with(resource_fields)
 	
-	# create something
-	def put(self, ImageID):
+	# create new entry into database
+	def put(self, image_id):
 		
 		# take input arguments and define the class with it
 		args = image_put_args.parse_args()
-		result = ImageDB.query.filter_by(id=ImageID).first()
-		
+		result = ImageDB.query.filter_by(ImageID=image_id).first()
+
 		# if ID already exist then abort
 		if result:
 			abort(409, message="Error! image id already taken")
 		
-		image = ImageDB(id=ImageID, name=args["name"],views=args["views"],likes=args["likes"])
+		image = ImageDB(ImageID=image_id, Date=args["Date"],Type=args["Type"],Email=args["Email"],TenantID=args["TenantID"])
 		
-		# store info
+		# save info
 		db.session.add(image) # temporarily add
 		db.session.commit() # permanently add
 		
@@ -115,44 +117,59 @@ class Image(Resource):
 	
 	# decorator to serialize the object into the desired dictionary, otherwise only object will be returned
 	@marshal_with(resource_fields)
-	def patch(self,ImageID):
+	
+	# edit an existing entry in a database
+	def patch(self, image_id):
 		
 		# take input arguments and define the class with it
 		args  = image_update_args.parse_args()
-		result = ImageDB.query.filter_by(id=ImageID).first()
+		result = ImageDB.query.filter_by(ImageID=image_id).first()
 		
 		# if such ID doesnt exist
 		if not result:
 			abort(404, message="Error! could not find image with that ID, cannot update")
 		
 		# make individual changes (not a very clean way to do it, can be improved in future)
-		if args["ImageID"]:
-			result.name = args["ImageID"]
+		# dont make changes to primary key
 		if args["Date"]:
-			result.views = args["Date"]	
+			result.Date = args["Date"]	
 		if args["Type"]:
-			result.likes = args["Type"]
+			result.Type = args["Type"]
 		if args["Email"]:
-			result.likes = args["Email"]
+			result.Email = args["Email"]
 		if args["TenantID"]:
-			result.likes = args["TenantID"]
+			result.TenantID = args["TenantID"]
 		
-		# add changes
+		# save changes
 		db.session.commit()
 		
 		# return filtered result
-		return result
+		return(result)
 	
-	# remove something
-###########	def delete(self, ImageID):
+	# decorator to serialize the object into the desired dictionary, otherwise only object will be returned
+	@marshal_with(resource_fields)
 	
-		# abort if trying to delete data that doesnt exist
-		abort_if_video_id_doesnt_exist(ImageID)
-		del images[ImageID]
-		return("",204)
+	# remove entry from database
+	def delete(self, image_id):
+	
+		# take input arguments and define the class with it
+		result = ImageDB.query.filter_by(ImageID=image_id).first()
+		
+		# if such ID doesnt exist
+		if not result:
+			abort(404, message="Error! could not find image with that ID, cannot delete")
+		
+		# remove entry
+		ImageDB.query.filter_by(ImageID=image_id).delete()
+		
+		# save changes
+		db.session.commit()
+		
+		# return success message
+		return("successfully delete entry image id = "+str(image_id))
 
 # Add class to API
-api.add_resource(Image, "/image/<int:ImageID>")
+api.add_resource(Image, "/image/<int:image_id>")
 
 # start server and flask application
 if __name__ == "__main__":
