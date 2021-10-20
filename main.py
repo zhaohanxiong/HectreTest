@@ -1,12 +1,38 @@
 # import dependencies
 from flask import Flask, request
 from flask_restful import Api, Resource, reqparse, abort
-
+from flask_sqlalchemy import SQLAlchemy
 # create a new app
 app = Flask(__name__)
 
 # wrap app within restful api
 api = Api(app)
+
+# configure the sql alchemy database
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+
+# define the database
+db = SQLAlchemy(app)
+
+# define structure of database
+class VideoModel(db.Model):
+
+	# define the id column with unique keys
+	id = db.Column(db.Integer, primary_key=True)
+
+	# define name column with max 100 char, and data has to always have a name
+	name = db.Column(db.String(100), nullable=False)
+	
+	# define two more numeric columns
+	views = db.Column(db.Integer, nullable=False)
+	likes = db.Column(db.Integer, nullable=False)
+
+	# wrapper to pring all info
+	def __repr(self):
+		return ("Video(name = "+str(name)+" views = "+str(views)+" likes = "+str(likes))
+
+# create a database, only do this once!!!
+#db.create_all()
 
 # define guidelines for input arguments with data type and error msg
 video_put_args = reqparse.RequestParser()
