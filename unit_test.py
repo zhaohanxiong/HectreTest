@@ -21,20 +21,8 @@ print(response.json())
 
 # Currently this all just stores temporarily in memory
 
-# create a list of queries
-data = [{"name": "pewdiepie", "likes": 10, "views": 300000},
-		{"name": "plain bagel", "likes": 100, "views": 25},
-		{"name": "fake pewds", "likes": 1, "views": 99999999}]
-
-for i in range(len(data)):
-	response = requests.put(BASE + "video/"+str(i),data[i])
-	print(response.json())
-	
-response = requests.delete(BASE + "video/0")
-print(response) # dont return json if the request is delete
-
-response = requests.get(BASE + "video/69")
+response = requests.get(BASE + "video/2")
 print(response.json())
 
-response = requests.get(BASE + "video/2")
+response = requests.patch(BASE + "video/2", {"name": "get rich quick", "views": 666, "likes": 888})
 print(response.json())
