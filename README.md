@@ -6,7 +6,8 @@ Summary of Scripts:
 		
 	- db_add_initial.py and db_query.py are test scripts to insert data and extract/edit data in the database
 
-	- test_backendAPI.py performs some simple unit tests on the classes in initialize_backendAPI.py
+	- test_backendAPI.py performs some simple unit tests on the objects created from initialize_backendAPI.py.
+	  can be run with py –m pytest
 	
 	- ...cloud stuff
 	
@@ -14,7 +15,8 @@ Summary of files:
 	
 	- "Techinical Test Answers.docx" is the written answers to the tasks given in this technical test
 	
-	- image_database.db is the SQLite relational database created using flask SQLalchemy in initialize_backendAPI.py (contains Image Table and User Table)
+	- image_database.db is the SQLite relational database created using flask SQLalchemy in initialize_backendAPI.py (contains 
+	  Image Table and User Table)
 
 	- requirements.txt are all the python dependencies needed
 	
