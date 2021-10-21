@@ -28,3 +28,5 @@ Setting up to run the code in a linux environment:
 		a)	python sample.py
 
 		But make sure to activate the virtual environment in #4 every time you reconnect to the server.
+	
+	6)	Run “initialize_backendAPI.py” which sets up the API so data can be fed in to the database in real time.
