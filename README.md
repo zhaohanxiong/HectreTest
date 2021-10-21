@@ -15,7 +15,7 @@ Summary of files:
 	
 	- "Techinical Test Answers.docx" is the written answers to the tasks given in this technical test
 	
-	- image_database.db is the SQLite database created using SQL alchemy
+	- image_database.db is the SQLite relational database created using SQL alchemy
 
 	- requirements.txt are all the python dependencies needed
 	

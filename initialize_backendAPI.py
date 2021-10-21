@@ -22,7 +22,24 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///image_database.db"
 # initialize the database
 db = SQLAlchemy(app)
 
-# class to define the structure of the database
+# UserInfo database has a one-to-many relationship with ImageDB Database, defined below
+# class define the structure of the database for user info
+class UserInfo(db.Model):
+	
+	# define tenant ID column (max 100 character string)
+	user_ID = db.Column(db.String(100), primary_key=True)
+	
+	# define user email column (max 100 character string), 
+	Email = db.Column(db.String(100), nullable=False)
+	
+	# create one-to-many relation, a sudo column in Image DB for the user
+	image_by_user = db.relationship("ImageDB", backref="userinfo")
+	
+	# wrapper to print all info
+	def __repr__(self):
+		return ("Email = "+Email+" tenant id = "+user_ID)
+
+# class to define the structure of the database for images info
 class ImageDB(db.Model):
 
 	# define the image ID column which is primary key
@@ -34,18 +51,16 @@ class ImageDB(db.Model):
 	# define date time column (UTC format)
 	Date = db.Column(db.DateTime(timezone=True), nullable=False)
 	
-	# define fruit type column (max 100 character string)
-	Type = db.Column(db.String(100), nullable=False)
-	
-	# define user email column (max 100 character string)
-	Email = db.Column(db.String(100), nullable=False)
-	
+	# define fruit type column (max 100 character string), may be you dont know the fruit type at first
+	Type = db.Column(db.String(100))
+
 	# define tenant ID column (max 100 character string)
-	TenantID = db.Column(db.String(100), nullable=False)
+	# foreign key refers to the primary key in another table, so its linked to the user info table
+	TenantID = db.Column(db.String(100), db.ForeignKey(UserInfo.user_ID), nullable=False)
 	
 	# wrapper to print all info
 	def __repr__(self):
-		return ("Images(image id = "+str(ImageID)+" date = "+str(Date)+" type = "+Type+" email = "+Email+" tenant id = "+TenantID)
+		return ("Images(image id = "+str(ImageID)+" date = "+str(Date)+" type = "+Type+" tenant id = "+TenantID)
 
 # create the database if it doesnt exist, if it exist, then dont overwrite
 if not any([s for s in os.listdir() if s == "image_database.db"]):
@@ -82,7 +97,6 @@ resource_fields = {"ImageID": fields.Integer, # unique ID of image
 				   "ImagePath": fields.String, # path of image to be uploaded
 				   "Date": fields.DateTime(dt_format='iso8601'), # time and date of image acquired
 				   "Type": fields.String, # type of fruit in image
-				   "Email": fields.String, # email of user uploading image
 				   "TenantID": fields.String # ID of user uploading image
 				  }
 
@@ -113,13 +127,32 @@ class ImageInfo(Resource):
 		
 		# take input arguments and define the class with it
 		args = image_put_args.parse_args()
+		
+		# check if image ID already exists
 		result = ImageDB.query.filter_by(ImageID=image_id).first()
-
-		# if ID already exist then abort
+		
+		# if image ID already exist then abort
 		if result:
 			abort(409, message="Error! image id already taken")
 		
-		image = ImageDB(ImageID=image_id,ImagePath=args["ImagePath"],Date=args["Date"],Type=args["Type"],Email=args["Email"],TenantID=args["TenantID"])
+		# check if user id exists, if not, we can insert it into user table
+		result = UserInfo.query.filter_by(user_ID=args["TenantID"]).first()
+		
+		if result:
+			user = result # reuse user if already exists in database
+		else:
+			user = UserInfo(user_ID=args["TenantID"],Email=args["Email"])
+			
+		# save info
+		db.session.add(user) # temporarily add
+		db.session.commit() # permanently add
+		
+		# define objects
+		image = ImageDB(ImageID=image_id,ImagePath=args["ImagePath"],Date=args["Date"],Type=args["Type"],TenantID=args["TenantID"],userinfo=user)
+
+		# save info
+		db.session.add(image) # temporarily add
+		db.session.commit() # permanently add
 		
 		# read the file into memory given path
 		# not sure if open-cv can be used like this in this in this framework?
@@ -127,11 +160,7 @@ class ImageInfo(Resource):
 		
 		# save the image into the filesystem created above, pad name with zeros
 		cv2.imwrite("image_filesystem/"+"{0:04}".format(image_id)+" - new_image.png",image_file)
-		
-		# save info
-		db.session.add(image) # temporarily add
-		db.session.commit() # permanently add
-		
+
 		# return image with success
 		return(image, 201)
 	
@@ -157,8 +186,6 @@ class ImageInfo(Resource):
 			result.Date = args["Date"]	
 		if args["Type"]:
 			result.Type = args["Type"]
-		if args["Email"]:
-			result.Email = args["Email"]
 		if args["TenantID"]:
 			result.TenantID = args["TenantID"]
 		
@@ -217,4 +244,4 @@ api.add_resource(ImageInfo, "/image/<int:image_id>")
 # start server and flask application
 if __name__ == "__main__":
 
-	app.run(debug=True) # run testing in debugging mode
+	app.run(debug=True) # run testing in debugging mode, choose False if deploying
