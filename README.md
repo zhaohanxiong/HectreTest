@@ -10,8 +10,6 @@ Summary of Scripts:
 	- test_backendAPI.py performs some simple unit tests on the objects created from initialize_backendAPI.py.
 	  can be run with py –m pytest
 	
-	- ...cloud stuff
-	
 Summary of files:
 	
 	- "Techinical Test Answers.docx" is the written answers to the tasks given in this technical test
