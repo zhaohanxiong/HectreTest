@@ -9,6 +9,8 @@ Summary of Scripts:
 
 	- ...unit test
 	
+	- ...cloud stuff
+	
 Summary of files:
 	
 	- "Techinical Test Answers.docx" is the written answers to the tasks given in this technical test
