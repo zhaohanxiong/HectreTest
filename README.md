@@ -14,7 +14,7 @@ Summary of files:
 	
 	- "Techinical Test Answers.docx" is the written answers to the tasks given in this technical test
 	
-	- image_database.db is the SQLite relational database created using flask SQLalchemy (contains Image Table and User Table)
+	- image_database.db is the SQLite relational database created using flask SQLalchemy in initialize_backendAPI.py (contains Image Table and User Table)
 
 	- requirements.txt are all the python dependencies needed
 	
