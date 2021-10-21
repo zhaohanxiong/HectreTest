@@ -2,12 +2,26 @@
 
 Summary of Scripts:
 
-	- 
+	- initialize_backendAPI.py initializes the Flask API environment to read data in real time given a user input
+		it also creates the database
+		
+	- db_add_initial.py and db_query.py are test scripts to insert data and extract/edit data in the database
+
+	- ...unit test
 	
 Summary of files:
 	
-	- 
+	- "Techinical_Test Answers.docx" is the written answers to the tasks given in this technical test
+	
+	- image_database.db is the SQLite database created using SQL alchemy
 
+	- requirements.txt are all the python dependencies needed
+	
+	- image_filesystem is a folder which is used to store images when given an image path to read an input image
+	
+	- .git is a folder which has all the history of commands to github
+
+	
 Setting up to run the code in a linux environment:
 
 	1)	SSH into the desired server (could be cloud, hpc cluster, or just a local server)
