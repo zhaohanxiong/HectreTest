@@ -12,14 +12,14 @@ BASE = "http://127.0.0.1:5000/"
 response = requests.get(BASE + "image/2")
 print(response.json())
 
-# pause
+# pause in cmd
 input()
 
 # edit sample in database
 response = requests.patch(BASE + "image/2", {"ImageID": 2,"Type": "Mango"})
 print(response.json())
 
-# pause
+# pause in cmd
 input()
 
 # delete sample in database

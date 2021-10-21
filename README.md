@@ -6,7 +6,7 @@ Summary of Scripts:
 		
 	- db_add_initial.py and db_query.py are test scripts to insert data and extract/edit data in the database
 
-	- ...unit test
+	- test_backendAPI.py performs some simple unit tests on the classes in initialize_backendAPI.py
 	
 	- ...cloud stuff
 	
@@ -18,7 +18,7 @@ Summary of files:
 
 	- requirements.txt are all the python dependencies needed
 	
-	- image_filesystem is a folder which is used to store images when given an image path to read an input image
+	- image_filesystem is a folder which is used to store images when given an image path to read an input image in initialize_backendAPI.py
 	
 	- .git is a folder which has all the history of commands to github (only visible in the local repository)
 	
@@ -44,6 +44,6 @@ Setting up to run the code in a linux environment:
 	5)	The python code can then be run through commands in the terminal etc:
 		a)	python sample.py
 
-		But make sure to activate the virtual environment in #4 every time you reconnect to the server.
+		But make sure to activate the virtual environment with #4 every time you reconnect to the server.
 	
 	6)	Run “initialize_backendAPI.py” which sets up the API so data can be fed in to the database in real time.

@@ -36,8 +36,8 @@ class UserInfo(db.Model):
 	image_by_user = db.relationship("ImageDB", backref="userinfo")
 	
 	# wrapper to print all info
-	def __repr__(self):
-		return ("Email = "+Email+" tenant id = "+user_ID)
+	#def __repr__(self):
+	#	return ("Email = "+Email+" tenant id = "+user_ID)
 
 # class to define the structure of the database for images info
 class ImageDB(db.Model):
@@ -59,8 +59,8 @@ class ImageDB(db.Model):
 	TenantID = db.Column(db.String(100), db.ForeignKey(UserInfo.user_ID), nullable=False)
 	
 	# wrapper to print all info
-	def __repr__(self):
-		return ("Images(image id = "+str(ImageID)+" date = "+str(Date)+" type = "+Type+" tenant id = "+TenantID)
+	#def __repr__(self):
+	#	return ("Images(image id = "+str(ImageID)+" date = "+str(Date)+" type = "+Type+" tenant id = "+TenantID)
 
 # create the database if it doesnt exist, if it exist, then dont overwrite
 if not any([s for s in os.listdir() if s == "image_database.db"]):
@@ -110,14 +110,21 @@ class ImageInfo(Resource):
 	def get(self, image_id):
 	
 		# query images by ID, get first sample
-		result = ImageDB.query.filter_by(ImageID=image_id).first()
+		result1 = ImageDB.query.filter_by(ImageID=image_id).first()
 		
 		# if no result found
-		if not result:
+		if not result1:
 			abort(404, message="Error! could not find image with id")
 		
-		# return output data row
-		return(result)
+		# use the image id to find the user information with image ID
+		result2 = UserInfo.query.filter_by(user_ID=result1.TenantID).first()
+
+		# if no result found, if somehow row in image db is missing user ID
+		if not result2:
+			abort(404, message="Error! image database missing user ID, check database!")
+		
+		# return output data row, could not get user table to be printed too, may be a seperate method is needed
+		return(result1)
 	
 	# decorator to serialize the object into the desired dictionary, otherwise only object will be returned
 	@marshal_with(resource_fields)
