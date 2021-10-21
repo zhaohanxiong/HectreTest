@@ -2,7 +2,8 @@
 
 Summary of Scripts:
 
-	- initialize_backendAPI.py initializes the Flask API environment to read data in  given a user input, it also creates the relational database
+	- initialize_backendAPI.py initializes the Flask API environment to read data in  given a user input, it also 
+	  creates the relational database
 		
 	- db_add_initial.py and db_query.py are test scripts to insert data and extract/edit data in the database
 
@@ -15,12 +16,13 @@ Summary of files:
 	
 	- "Techinical Test Answers.docx" is the written answers to the tasks given in this technical test
 	
-	- image_database.db is the SQLite relational database created using flask SQLalchemy in initialize_backendAPI.py (contains 
-	  Image Table and User Table)
+	- image_database.db is the SQLite relational database created using flask SQLalchemy in initialize_backendAPI.py 
+	  (contains Image Table and User Table)
 
 	- requirements.txt are all the python dependencies needed
 	
-	- image_filesystem is a folder which is used to store images when given an image path to read an input image in initialize_backendAPI.py
+	- image_filesystem is a folder which is used to store images when given an image path to read an input image 
+	  in initialize_backendAPI.py
 	
 	- .git is a folder which has all the history of commands to github (only visible in the local repository)
 	
