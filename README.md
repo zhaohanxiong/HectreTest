@@ -11,7 +11,7 @@ Summary of Scripts:
 	
 Summary of files:
 	
-	- "Techinical_Test Answers.docx" is the written answers to the tasks given in this technical test
+	- "Techinical Test Answers.docx" is the written answers to the tasks given in this technical test
 	
 	- image_database.db is the SQLite database created using SQL alchemy
 
@@ -19,7 +19,7 @@ Summary of files:
 	
 	- image_filesystem is a folder which is used to store images when given an image path to read an input image
 	
-	- .git is a folder which has all the history of commands to github
+	- .git is a folder which has all the history of commands to github (only visible in the local repository)
 
 	
 Setting up to run the code in a linux environment:
