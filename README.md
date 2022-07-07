@@ -1,5 +1,8 @@
 # HectreTest
 
+![无标题](https://user-images.githubusercontent.com/29684281/177693224-97d4ed52-42e9-47da-8242-fe6a695ae885.png)
+
+
 Summary of Scripts:
 
 	- initialize_backendAPI.py initializes the Flask API environment to read data in  given a user input, it also 
